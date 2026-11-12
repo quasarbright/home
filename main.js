@@ -75,12 +75,29 @@ function titleFromUrl(url) {
 
 // ---------- background ----------
 
-function setupBackground(backgrounds) {
+// Fisher–Yates, on a copy.
+function shuffled(list) {
+  const a = list.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function setupBackground(allBackgrounds) {
   const iframe = document.getElementById("background");
   const credit = document.getElementById("credit");
   const link = document.getElementById("credit-link");
   const shuffle = document.getElementById("shuffle");
-  if (!backgrounds.length) return;
+  if (!allBackgrounds.length) return;
+
+  // Shuffle the list once per visit; the button then walks through it in that order,
+  // so every background shows once before any repeats. ?bg=<text> moves a match to the front.
+  const backgrounds = shuffled(allBackgrounds);
+  const want = new URLSearchParams(location.search).get("bg");
+  const picked = want ? backgrounds.findIndex((b) => b.url.includes(want)) : -1;
+  if (picked > 0) backgrounds.unshift(...backgrounds.splice(picked, 1));
 
   let current = -1;
   function load(i) {
@@ -96,20 +113,14 @@ function setupBackground(backgrounds) {
   }
   iframe.addEventListener("load", () => iframe.classList.add("ready"));
 
-  shuffle.addEventListener("click", () => {
-    let next = current;
-    while (backgrounds.length > 1 && next === current) next = Math.floor(Math.random() * backgrounds.length);
-    load(next);
-  });
+  shuffle.addEventListener("click", () => load((current + 1) % backgrounds.length));
 
   // Everywhere except the links and the credit chip, the page lets the pointer through
   // (pointer-events: none), so the sketch gets real events. Over those elements the page
   // gets them instead; this re-dispatches the move inside the iframe at the same spot.
   document.addEventListener("pointermove", (e) => forwardMove(iframe, e));
 
-  const want = new URLSearchParams(location.search).get("bg");
-  const picked = want ? backgrounds.findIndex((b) => b.url.includes(want)) : -1;
-  load(picked >= 0 ? picked : Math.floor(Math.random() * backgrounds.length));
+  load(0);
 }
 
 // Dispatch a synthetic pointermove + mousemove on whatever is under (x, y) in the iframe.
@@ -149,5 +160,5 @@ async function main() {
   }
 }
 
-window.home = { extractProjectsData, normalizeUrl, sameOriginUrl, backgroundsFrom, titleFromUrl };
+window.home = { extractProjectsData, normalizeUrl, sameOriginUrl, backgroundsFrom, titleFromUrl, shuffled };
 main();
