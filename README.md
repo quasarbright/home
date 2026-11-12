@@ -2,15 +2,11 @@
 
 Mike Delmonaco's home page, served at `https://quasarbright.github.io/home/`.
 
-A background project from the portfolio runs full screen behind the page, with a link to whichever one is showing. Over it are a photo, a name, and an index of projects, videos, writing, and art. Each line shows a count and the newest item.
+A background project from the portfolio runs full screen behind the page, with a chip naming whichever one is showing and a Shuffle button. Over it are a photo, a name, and links to coding projects, blog posts, educational videos, music, and vector art (X for now, a gallery later). A soft dark halo sits behind each block of content so bright backgrounds don't wash out the text.
 
-There's no data in this repo. At load the page reads:
+The background list is the only data the page reads, and it comes from the deployed portfolio. Projection embeds every project and the config in `/portfolio/` as `window.PROJECTS_DATA`, and the page parses that. If `/portfolio/projects.json` ever exists, it's used instead. Backgrounds are projects with a `background:` field if any have one, otherwise `dynamicBackgrounds` from the portfolio config.
 
-- **Projects, videos, backgrounds** from the deployed portfolio. Projection embeds every project and the config in `/portfolio/` as `window.PROJECTS_DATA`, and the page parses that. If `/portfolio/projects.json` ever exists, it's used instead. Videos are projects tagged `video`. The Videos line stays hidden until one exists.
-- **Writing** from the blog's Atom feed at `/blog/feeds/all.atom.xml`.
-- **Art** is a link to https://x.com/QuasarBright for now.
-
-Backgrounds are projects with a `background:` field if any have one, otherwise `dynamicBackgrounds` from the portfolio config.
+`?bg=<text>` picks the first background whose URL contains `<text>`, for checking contrast (`?bg=image-column-sort` is the brightest).
 
 ## Run locally
 
