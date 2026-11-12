@@ -91,7 +91,7 @@ main a, .credit a, .credit button { pointer-events: auto; }
 main {
   position: relative; z-index: 2;
   min-height: 100vh; min-height: 100dvh;
-  max-width: 1400px; margin: 0 auto;
+  max-width: 1600px; margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   gap: clamp(32px, 6vw, 112px);
@@ -112,7 +112,9 @@ main {
 }
 h1 {
   font-family: var(--display); font-weight: 800;
-  font-size: clamp(3.4rem, 8.4vw, 8.5rem);
+  /* The name is ~4.7em wide, so it fills its column exactly at 8.4vw. Stop growing where main stops
+     (1600px, i.e. 8.4vw = 134px); past that the column is fixed and a bigger name would run into the links. */
+  font-size: clamp(3.4rem, 8.4vw, 134px);
   line-height: 0.9; letter-spacing: -0.035em;
   margin: 0;
 }
