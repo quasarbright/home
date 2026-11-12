@@ -61,6 +61,13 @@ function backgroundsFrom(data) {
   }));
 }
 
+// Backgrounds on this site load by path, so the iframe is same-origin with the page in production
+// (and through serve.py's proxy locally). Same origin is what lets us reach into its document.
+const SITE = "https://quasarbright.github.io";
+function sameOriginUrl(url) {
+  return url.startsWith(SITE + "/") ? url.slice(SITE.length) : url;
+}
+
 function titleFromUrl(url) {
   const seg = normalizeUrl(url).split("/").pop() || "Background";
   return seg.replace(/[-_]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
@@ -81,7 +88,7 @@ function setupBackground(backgrounds) {
     const bg = backgrounds[i];
     const sep = bg.url.includes("?") ? "&" : "?";
     iframe.classList.remove("ready");
-    iframe.src = /[?&]background\b/.test(bg.url) ? bg.url : bg.url + sep + "background=true";
+    iframe.src = sameOriginUrl(/[?&]background\b/.test(bg.url) ? bg.url : bg.url + sep + "background=true");
     link.textContent = bg.project?.title || titleFromUrl(bg.url);
     link.href = bg.project?.pageLink || bg.url.replace(/[?&]background(=[^&]*)?/, "");
     credit.hidden = false;
@@ -95,18 +102,41 @@ function setupBackground(backgrounds) {
     load(next);
   });
 
-  // The page's own text sits over the iframe, so pointer moves there never reach it natively.
-  // Forward them the same way the portfolio does; background projects listen for this message.
-  document.addEventListener("mousemove", (e) => {
-    iframe.contentWindow?.postMessage(
-      { type: "mousemove", x: e.clientX, y: e.clientY, pageX: e.pageX, pageY: e.pageY },
-      "*"
-    );
-  });
+  // Everywhere except the links and the credit chip, the page lets the pointer through
+  // (pointer-events: none), so the sketch gets real events. Over those elements the page
+  // gets them instead; this re-dispatches the move inside the iframe at the same spot.
+  document.addEventListener("pointermove", (e) => forwardMove(iframe, e));
 
   const want = new URLSearchParams(location.search).get("bg");
   const picked = want ? backgrounds.findIndex((b) => b.url.includes(want)) : -1;
   load(picked >= 0 ? picked : Math.floor(Math.random() * backgrounds.length));
+}
+
+// Dispatch a synthetic pointermove + mousemove on whatever is under (x, y) in the iframe.
+// Sketches read clientX/clientY from the event, so they follow the cursor as if it were theirs.
+// Uses the iframe's own event constructors so the events belong to its window.
+function forwardMove(iframe, e) {
+  let win, doc;
+  try {
+    win = iframe.contentWindow;
+    doc = iframe.contentDocument; // null or throws when cross-origin
+  } catch {
+    return;
+  }
+  if (!win || !doc) return;
+  const r = iframe.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const target = doc.elementFromPoint(x, y) || doc.body || doc.documentElement;
+  if (!target) return;
+  const init = {
+    bubbles: true, cancelable: true, composed: true, view: win,
+    clientX: x, clientY: y, screenX: e.screenX, screenY: e.screenY,
+    movementX: e.movementX, movementY: e.movementY, buttons: e.buttons,
+  };
+  target.dispatchEvent(new win.PointerEvent("pointermove", {
+    ...init, pointerId: e.pointerId, pointerType: e.pointerType, isPrimary: e.isPrimary,
+  }));
+  target.dispatchEvent(new win.MouseEvent("mousemove", init));
 }
 
 // ---------- boot ----------
@@ -119,5 +149,5 @@ async function main() {
   }
 }
 
-window.home = { extractProjectsData, normalizeUrl, backgroundsFrom, titleFromUrl };
+window.home = { extractProjectsData, normalizeUrl, sameOriginUrl, backgroundsFrom, titleFromUrl };
 main();

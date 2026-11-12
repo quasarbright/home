@@ -1,7 +1,9 @@
 """Local dev server for the home page.
 
-Serves this repo at /home/ and proxies /portfolio/ and /blog/ to the live site,
-so the page reads real data the same way it will on quasarbright.github.io.
+Serves this repo at /home/ and proxies every other path to the live site, so the page
+reads real data and loads background sketches from the same origin, as it will on
+quasarbright.github.io. (Same origin is what lets the page forward mouse moves into
+the background iframe.)
 
     python3 serve.py          # http://localhost:8642/home/
 """
@@ -13,7 +15,6 @@ import urllib.request
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8642
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LIVE = "https://quasarbright.github.io"
-PROXIED = ("/portfolio/", "/blog/")
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -36,16 +37,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Location", "/home/")
             self.end_headers()
             return
-        if self.path.startswith(PROXIED):
-            return self.proxy()
         if not self.path.startswith("/home/"):
-            self.send_error(404)
-            return
+            return self.proxy()
         super().do_GET()
 
     def proxy(self):
         try:
-            with urllib.request.urlopen(LIVE + self.path, timeout=15) as r:
+            with OPENER.open(LIVE + self.path, timeout=15) as r:
                 body = r.read()
                 self.send_response(r.status)
                 self.send_header("Content-Type", r.headers.get("Content-Type", "application/octet-stream"))
@@ -53,9 +51,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
         except urllib.error.HTTPError as e:
-            self.send_error(e.code)
+            if e.code in (301, 302, 307, 308) and e.headers.get("Location"):
+                # Pass redirects to the browser (e.g. /p5js/boids -> /p5js/boids/) so relative
+                # asset paths resolve against the right URL. Keep them on this server.
+                self.send_response(e.code)
+                self.send_header("Location", e.headers["Location"].replace(LIVE, ""))
+                self.end_headers()
+            else:
+                self.send_error(e.code)
         except Exception as e:  # network down, timeout
             self.send_error(502, str(e))
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+OPENER = urllib.request.build_opener(NoRedirect)
 
 
 if __name__ == "__main__":

@@ -14,4 +14,8 @@ The background list is the only data the page reads, and it comes from the deplo
 python3 serve.py
 ```
 
-Then open http://localhost:8642/home/. The server serves this repo at `/home/` and proxies `/portfolio/` and `/blog/` to the live site, so the page sees the same paths it will in production.
+Then open http://localhost:8642/home/. The server serves this repo at `/home/` and proxies every other path to the live site, so the page sees the same paths it will in production. That includes the background sketches, which keeps them same-origin with the page.
+
+## Mouse over the links
+
+The page has `pointer-events: none` everywhere except the links and the credit chip, so the background gets real mouse events nearly everywhere. Over a link the page gets the event instead, and `forwardMove` in `main.js` dispatches a synthetic `pointermove` and `mousemove` at the same spot inside the iframe. That only works because the iframe is same-origin, which is why backgrounds load by path (`/sketches/fireflies/?background`) rather than by full URL.
