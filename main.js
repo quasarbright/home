@@ -111,7 +111,10 @@ function setupBackground(allBackgrounds) {
     credit.hidden = false;
     shuffle.hidden = backgrounds.length < 2;
   }
-  iframe.addEventListener("load", () => iframe.classList.add("ready"));
+  iframe.addEventListener("load", () => {
+    iframe.classList.add("ready");
+    normalizeCursor(iframe);
+  });
 
   shuffle.addEventListener("click", () => load((current + 1) % backgrounds.length));
 
@@ -148,6 +151,22 @@ function forwardMove(iframe, e) {
     ...init, pointerId: e.pointerId, pointerType: e.pointerType, isPrimary: e.isPrimary,
   }));
   target.dispatchEvent(new win.MouseEvent("mousemove", init));
+}
+
+// Some sketches set their own cursor (differential growth uses a crosshair). On the home page the
+// background is scenery, so keep the normal pointer there. Mouse input is unaffected; this only
+// overrides the cursor style. `!important` in a stylesheet also beats inline `style.cursor`.
+function normalizeCursor(iframe) {
+  let doc;
+  try {
+    doc = iframe.contentDocument; // null or throws when cross-origin
+  } catch {
+    return;
+  }
+  if (!doc?.head) return;
+  const style = doc.createElement("style");
+  style.textContent = "*, *::before, *::after { cursor: auto !important; }";
+  doc.head.append(style);
 }
 
 // ---------- boot ----------
