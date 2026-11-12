@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mike Delmonaco</title>
+  <meta name="description" content="Simulations, puzzles, small programming languages, and videos about math.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <iframe id="background" title="Background simulation" tabindex="-1" aria-hidden="true"></iframe>
+  <div class="scrim" aria-hidden="true"></div>
+
+  <div class="credit" id="credit" hidden>
+    <span class="credit-label">Background</span>
+    <a id="credit-link" href="#"></a>
+    <button type="button" id="shuffle">Shuffle</button>
+  </div>
+
+  <main>
+    <div class="who">
+      <img class="me" src="images/me.jpg" alt="Mike Delmonaco" width="640" height="536">
+      <h1>Mike<br>Delmonaco</h1>
+      <p class="intro">I make simulations, puzzles, small programming languages, and videos about math.</p>
+    </div>
+
+    <ul class="index">
+      <li class="kind-projects">
+        <a class="k" href="/portfolio/">Projects</a>
+        <span class="n" data-count="projects"></span>
+        <span class="latest" data-latest="projects"></span>
+      </li>
+      <li class="kind-videos">
+        <a class="k" href="/portfolio/?tags=video" data-section="videos">Videos</a>
+        <span class="n" data-count="videos"></span>
+        <span class="latest" data-latest="videos"></span>
+      </li>
+      <li class="kind-writing">
+        <a class="k" href="/blog/">Writing</a>
+        <span class="n" data-count="writing"></span>
+        <span class="latest" data-latest="writing"></span>
+      </li>
+      <li class="kind-art">
+        <a class="k" href="https://x.com/QuasarBright">Art</a>
+        <span class="n"></span>
+        <span class="latest"><a href="https://x.com/QuasarBright">@QuasarBright on X</a></span>
+      </li>
+    </ul>
+  </main>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
