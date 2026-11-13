@@ -119,6 +119,23 @@ h1 {
   margin: 0;
 }
 
+/* ---------- socials: small, muted, under the name ---------- */
+.socials {
+  list-style: none; margin: clamp(18px, 2vw, 28px) 0 0; padding: 0;
+  display: flex; gap: clamp(14px, 1.4vw, 20px);
+}
+.socials a {
+  display: block; color: var(--muted);
+  padding: 4px; margin: -4px; /* bigger tap target without moving the icon */
+  transition: color 0.15s ease;
+}
+.socials a:hover, .socials a:focus-visible { color: var(--text); }
+.socials svg {
+  display: block; width: clamp(20px, 1.6vw, 26px); height: auto;
+  fill: currentColor;
+  filter: drop-shadow(0 1px 6px rgba(var(--dim), 0.9));
+}
+
 /* ---------- sections ---------- */
 .sections { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .sections li { border-bottom: 1px solid var(--line); }
