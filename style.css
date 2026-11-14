@@ -29,7 +29,9 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; }
+/* One screen, never scrolls. Every size below is capped by the viewport height as well as the width,
+   so the content always fits; overflow: hidden is only the backstop. */
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -90,13 +92,14 @@ main a, .credit a, .credit button { pointer-events: auto; }
 /* ---------- main ---------- */
 main {
   position: relative; z-index: 2;
-  min-height: 100vh; min-height: 100dvh;
+  height: 100vh; height: 100dvh;
   max-width: 1600px; margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   gap: clamp(32px, 6vw, 112px);
   align-content: center; align-items: center;
-  padding-block: calc(80px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px));
+  /* top clears the credit chip */
+  padding-block: calc(min(80px, 11vh) + env(safe-area-inset-top, 0px)) calc(min(56px, 6vh) + env(safe-area-inset-bottom, 0px));
   padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
   padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
   text-shadow: var(--glyph-shadow);
@@ -104,24 +107,25 @@ main {
 
 .me {
   display: block;
-  width: clamp(110px, 13vw, 200px); height: auto; aspect-ratio: 1;
+  width: clamp(56px, min(13vw, 20vh), 200px); height: auto; aspect-ratio: 1;
   object-fit: cover; object-position: 50% 30%;
   border-radius: clamp(12px, 1.4vw, 20px);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  margin-bottom: clamp(18px, 2.2vw, 32px);
+  margin-bottom: clamp(10px, min(2.2vw, 3vh), 32px);
 }
 h1 {
   font-family: var(--display); font-weight: 800;
   /* The name is ~4.7em wide, so it fills its column exactly at 8.4vw. Stop growing where main stops
-     (1600px, i.e. 8.4vw = 134px); past that the column is fixed and a bigger name would run into the links. */
-  font-size: clamp(3.4rem, 8.4vw, 134px);
+     (1600px, i.e. 8.4vw = 134px); past that the column is fixed and a bigger name would run into the links.
+     14vh keeps it from pushing the page past one screen on short, wide windows. */
+  font-size: clamp(2rem, min(8.4vw, 14vh), 134px);
   line-height: 0.9; letter-spacing: -0.035em;
   margin: 0;
 }
 
 /* ---------- socials: small, muted, under the name ---------- */
 .socials {
-  list-style: none; margin: clamp(18px, 2vw, 28px) 0 0; padding: 0;
+  list-style: none; margin: clamp(10px, min(2vw, 3vh), 28px) 0 0; padding: 0;
   display: flex; gap: clamp(14px, 1.4vw, 20px);
 }
 .socials a {
@@ -141,9 +145,9 @@ h1 {
 .sections li { border-bottom: 1px solid var(--line); }
 .sections a {
   display: block;
-  padding: clamp(14px, 2.3vh, 26px) 0;
+  padding: clamp(6px, 2.3vh, 26px) 0;
   font-family: var(--display); font-weight: 700;
-  font-size: clamp(1.7rem, 3.4vw, 3.3rem);
+  font-size: clamp(1.1rem, min(3.4vw, 6.5vh), 3.3rem);
   line-height: 1.05; letter-spacing: -0.02em;
   color: var(--kind);
   text-decoration: none;
@@ -157,11 +161,14 @@ h1 {
 .kind-art { --kind: var(--k-art); }
 
 /* ---------- narrow ---------- */
+/* Stacked: portrait phones and narrow windows. Landscape phones keep two columns, which fit their height. */
+@media (max-width: 820px) and (max-aspect-ratio: 1/1) {
+  main { grid-template-columns: 1fr; gap: min(36px, 4vh); align-content: center; }
+  h1 { font-size: clamp(2rem, min(15vw, 8vh), 5rem); }
+  .me { width: clamp(56px, min(26vw, 15vh), 140px); }
+  .sections a { font-size: clamp(1.1rem, min(7.6vw, 4.2vh), 2.4rem); padding: min(14px, 1.6vh) 0; }
+}
 @media (max-width: 820px) {
-  main { grid-template-columns: 1fr; gap: 36px; align-content: center; }
-  h1 { font-size: clamp(3rem, 15vw, 5rem); }
-  .me { width: clamp(96px, 26vw, 140px); }
-  .sections a { font-size: clamp(1.6rem, 7.6vw, 2.4rem); padding: 14px 0; }
   .credit-label { display: none; }
 }
 
